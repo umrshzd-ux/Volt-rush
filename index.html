@@ -1,9 +1,9 @@
-y<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Volt Rush ⚡</title>
+    <title>Volt Rush âš¡</title>
     <style>
         :root{--bg:#0a0a0f;--cyan:#00e5ff;--red:#ff1744;--gold:#ffd740;--panel:#1a1a2e;--text:#e0e0e0}
         *{margin:0;padding:0;box-sizing:border-box}
@@ -47,59 +47,220 @@ y<!DOCTYPE html>
         .calendar-grid{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:8px 0}
         .cal-day{background:#1e1e35;border-radius:8px;padding:8px 3px;width:34px;text-align:center;font-size:0.6rem;border:2px solid #2a2a4a}
         .cal-day.claimed{border-color:var(--gold);background:#2a2a20}.cal-day.today{border-color:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+
+        /* CMP Consent Dialog Styles */
+        #cmp-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)}
+        #cmp-overlay.active{display:flex}
+        #cmp-dialog{background:var(--panel);border:2px solid #3a3a5a;border-radius:20px;padding:24px;text-align:center;color:var(--text);width:92%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.8)}
+        #cmp-dialog h2{color:var(--cyan);font-size:1.2rem;margin-bottom:8px}
+        #cmp-dialog p{color:#ccc;font-size:0.78rem;line-height:1.4;margin:6px 0 10px}
+        #cmp-dialog .purpose-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;margin:4px 0;background:#1e1e35;border-radius:10px;font-size:0.72rem}
+        .purpose-row .always-on{color:#888;font-size:0.65rem;font-style:italic}
+        .toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0;margin-left:10px}
+        .toggle-switch input{opacity:0;width:0;height:0}
+        .toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#555;border-radius:24px;transition:0.3s}
+        .toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background-color:#fff;border-radius:50%;transition:0.3s}
+        .toggle-switch input:checked+.toggle-slider{background-color:var(--cyan)}
+        .toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}
+        .cmp-buttons{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+        .cmp-footer-link{font-size:0.62rem;color:#888;margin-top:8px;cursor:pointer;text-decoration:underline}
     </style>
 </head>
 <body>
 <div id="game-container">
     <canvas id="gameCanvas"></canvas>
     <div class="hud" id="hud">
-        <div>⚡<span id="hudScore">0</span></div><div>🔥<span id="hudCombo">0</span></div><div>❤️<span id="hudLives">3</span></div>
-        <div id="hudShield" style="display:none">🛡️<span id="hudShieldCount">0</span></div>
-        <div>💰<span id="hudVolts">0</span></div>
+        <div>âš¡<span id="hudScore">0</span></div><div>ðŸ”¥<span id="hudCombo">0</span></div><div>â¤ï¸<span id="hudLives">3</span></div>
+        <div id="hudShield" style="display:none">ðŸ›¡ï¸<span id="hudShieldCount">0</span></div>
+        <div>ðŸ’°<span id="hudVolts">0</span></div>
     </div>
-    <button class="pause-btn" id="pauseBtn" onclick="pauseGame()">⏸</button>
+    <button class="pause-btn" id="pauseBtn" onclick="pauseGame()">â¸</button>
     <div class="boss-name" id="bossName"></div>
-    <div class="boss-hint" id="bossHint">👆 TAP THE CORE!</div>
+    <div class="boss-hint" id="bossHint">ðŸ‘† TAP THE CORE!</div>
     <div class="boss-hp-bar" id="bossBar"><div class="fill" id="bossBarFill"></div></div>
-    <button class="music-toggle" id="musicBtn" onclick="toggleMusic()">🔊</button>
+    <button class="music-toggle" id="musicBtn" onclick="toggleMusic()">ðŸ”Š</button>
 
     <div class="overlay active" id="menuOverlay"><div class="panel">
         <h1><span class="volt">VOLT</span> <span class="rush">RUSH</span></h1>
-        <p style="color:#aaa;margin:4px 0;font-size:0.8rem">⚡ Tap cyan • Dodge red • Chase gold ⚡</p>
-        <button class="btn btn-cyan" onclick="showMissionSelect()">▶ PLAY</button>
-        <button class="btn btn-outline" onclick="showShop()">🛒 SHOP</button>
+        <p style="color:#aaa;margin:4px 0;font-size:0.8rem">âš¡ Tap cyan â€¢ Dodge red â€¢ Chase gold âš¡</p>
+        <button class="btn btn-cyan" onclick="showMissionSelect()">â–¶ PLAY</button>
+        <button class="btn btn-outline" onclick="showShop()">ðŸ›’ SHOP</button>
         <div style="display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin:6px 0">
-            <button class="btn btn-outline btn-sm" onclick="showAchievements()">🏆</button>
-            <button class="btn btn-outline btn-sm" onclick="showDailyReward()" id="dailyMenuBtn">🎁</button>
-            <button class="btn btn-outline btn-sm" onclick="showLeaderboard()">📊</button>
-            <button class="btn btn-outline btn-sm" onclick="showDailyChallenges()" id="challengeMenuBtn">🎯</button>
-            <button class="btn btn-outline btn-sm" onclick="openLootCrate()" id="crateMenuBtn">📦<span id="crateCount">0</span></button>
-            <button class="btn btn-outline btn-sm" onclick="showSettings()">⚙️</button>
+            <button class="btn btn-outline btn-sm" onclick="showAchievements()">ðŸ†</button>
+            <button class="btn btn-outline btn-sm" onclick="showDailyReward()" id="dailyMenuBtn">ðŸŽ</button>
+            <button class="btn btn-outline btn-sm" onclick="showLeaderboard()">ðŸ“Š</button>
+            <button class="btn btn-outline btn-sm" onclick="showDailyChallenges()" id="challengeMenuBtn">ðŸŽ¯</button>
+            <button class="btn btn-outline btn-sm" onclick="openLootCrate()" id="crateMenuBtn">ðŸ“¦<span id="crateCount">0</span></button>
+            <button class="btn btn-outline btn-sm" onclick="showSettings()">âš™ï¸</button>
         </div>
-        <button class="btn btn-sm btn-outline" onclick="watchAd()">📺 WATCH AD (+300V)</button>
-        <div style="margin-top:6px;font-size:0.7rem">💰 <span style="color:var(--gold)" id="menuVolts">0</span> | 🏆 <span style="color:var(--gold)" id="menuTrophies">0</span>/5</div>
+        <button class="btn btn-sm btn-outline" onclick="watchAd()">ðŸ“º WATCH AD (+300V)</button>
+        <div style="margin-top:6px;font-size:0.7rem">ðŸ’° <span style="color:var(--gold)" id="menuVolts">0</span> | ðŸ† <span style="color:var(--gold)" id="menuTrophies">0</span>/5</div>
         <div style="margin-top:8px;padding:8px;background:#1e1e35;border-radius:10px;font-size:0.7rem;color:#aaa">
-            <b style="color:#00e5ff">TAP</b> cyan | <b style="color:#ff1744">✖</b> red = Game Over | <b style="color:#ffd740">⭐</b> gold = +50 | 🔥35 = FEVER
+            <b style="color:#00e5ff">TAP</b> cyan | <b style="color:#ff1744">âœ–</b> red = Game Over | <b style="color:#ffd740">â­</b> gold = +50 | ðŸ”¥35 = FEVER
         </div>
     </div></div>
-    <div class="overlay" id="missionOverlay"><div class="panel"><h2>⚡ SELECT MISSION</h2><div id="missionList"></div><p style="font-size:0.7rem;color:#888">Done: <span id="missionsDone">0</span> | Bosses: <span id="bossesDone">0</span></p><button class="btn btn-outline btn-sm" onclick="showMenu()">← BACK</button></div></div>
-    <div class="overlay" id="shopOverlay"><div class="panel"><h2>🛒 SHOP</h2><p style="color:var(--gold);font-size:0.8rem">💰 <span id="shopVolts">0</span> VOLTS</p><div id="shopItems"></div><button class="btn btn-outline btn-sm" onclick="closeShop()">← BACK</button></div></div>
-    <div class="overlay" id="achieveOverlay"><div class="panel"><h2>🏆 ACHIEVEMENTS</h2><div id="achieveList"></div><button class="btn btn-outline btn-sm" onclick="showMenu()">← BACK</button></div></div>
-    <div class="overlay" id="settingsOverlay"><div class="panel"><h2>⚙️ SETTINGS</h2><div class="setting-row"><span>Difficulty</span><div><button class="setting-btn" id="diffEasy" onclick="setDiff('easy')">EASY</button><button class="setting-btn active" id="diffNormal" onclick="setDiff('normal')">NORMAL</button><button class="setting-btn" id="diffHard" onclick="setDiff('hard')">HARD</button></div></div><div class="setting-row"><span>Sound FX</span><button class="btn btn-sm btn-outline" id="sfxToggle" onclick="toggleSFX()">ON</button></div><div class="setting-row"><span>Music</span><button class="btn btn-sm btn-outline" id="musicToggleBtn" onclick="toggleMusic()">ON</button></div><button class="btn btn-outline btn-sm" onclick="showMenu()">← BACK</button></div></div>
-    <div class="overlay" id="challengeOverlay"><div class="panel"><h2>🎯 DAILY CHALLENGES</h2><div id="challengeList"></div><p style="font-size:0.65rem;color:#888">Resets: <span id="challengeTimer"></span></p><button class="btn btn-outline btn-sm" onclick="showMenu()">← BACK</button></div></div>
-    <div class="overlay" id="dailyOverlay"><div class="panel"><h2>📅 DAILY LOGIN</h2><div id="calendarGrid" class="calendar-grid"></div><p id="dailyTimer" style="color:var(--gold);font-size:0.75rem"></p><button class="btn btn-outline btn-sm" onclick="showMenu()">← BACK</button></div></div>
-    <div class="overlay" id="gameOverOverlay"><div class="panel"><h2 id="gameOverTitle">GAME OVER</h2><p>Score: <span id="goScore">0</span> | Combo: <span id="goCombo">0</span></p><p>VOLTS: <span id="goVolts">0</span></p><div id="doubleRewardContainer"></div><div id="continueBtnContainer"></div><div id="nextLevelBtnContainer"></div><button class="btn btn-cyan" onclick="restartGame()">🔄 RETRY</button><button class="btn btn-outline btn-sm" onclick="showMenu()">🏠 MENU</button></div></div>
-    <div class="overlay" id="bossVictoryOverlay"><div class="panel"><h2 style="color:var(--gold)">🏆 BOSS DEFEATED!</h2><p id="bossRewardText"></p><button class="btn btn-cyan" onclick="showMenu()">🏠 MENU</button></div></div>
-    <div class="overlay" id="pauseOverlay"><div class="panel"><h2>⏸ PAUSED</h2><button class="btn btn-cyan" onclick="resumeGame()">▶ RESUME</button><button class="btn btn-outline btn-sm" onclick="openShopFromPause()">🛒 SHOP</button><button class="btn btn-outline btn-sm" onclick="showMenu()">🏠 QUIT</button></div></div>
-    <div class="overlay" id="leaderboardOverlay"><div class="panel"><h2>📊 TOP 10</h2><div id="leaderboardList"></div><button class="btn btn-outline btn-sm" onclick="showMenu()">← BACK</button></div></div>
-    <div class="overlay" id="rateOverlay"><div class="panel"><h2>⭐ ENJOYING VOLT RUSH?</h2><p style="color:#aaa;font-size:0.8rem">Rate us on Amazon Appstore!</p><button class="btn btn-gold" onclick="rateNow()">⭐ RATE NOW</button><button class="btn btn-outline btn-sm" onclick="rateLater()">LATER</button></div></div>
-    <div class="overlay" id="crateOverlay"><div class="panel"><h2>📦 LOOT CRATE</h2><p id="crateRewardText"></p><button class="btn btn-gold" onclick="showMenu()">OK</button></div></div>
-    <div class="overlay" id="adOverlay"><div class="panel"><h2>📺 REWARDED AD</h2><p id="adTimer">5s</p><button class="btn btn-cyan" id="adCollectBtn" style="display:none" onclick="collectAdReward()">COLLECT +300V</button></div></div>
+    <div class="overlay" id="missionOverlay"><div class="panel"><h2>âš¡ SELECT MISSION</h2><div id="missionList"></div><p style="font-size:0.7rem;color:#888">Done: <span id="missionsDone">0</span> | Bosses: <span id="bossesDone">0</span></p><button class="btn btn-outline btn-sm" onclick="showMenu()">â† BACK</button></div></div>
+    <div class="overlay" id="shopOverlay"><div class="panel"><h2>ðŸ›’ SHOP</h2><p style="color:var(--gold);font-size:0.8rem">ðŸ’° <span id="shopVolts">0</span> VOLTS</p><div id="shopItems"></div><button class="btn btn-outline btn-sm" onclick="closeShop()">â† BACK</button></div></div>
+    <div class="overlay" id="achieveOverlay"><div class="panel"><h2>ðŸ† ACHIEVEMENTS</h2><div id="achieveList"></div><button class="btn btn-outline btn-sm" onclick="showMenu()">â† BACK</button></div></div>
+    <div class="overlay" id="settingsOverlay"><div class="panel"><h2>âš™ï¸ SETTINGS</h2><div class="setting-row"><span>Difficulty</span><div><button class="setting-btn" id="diffEasy" onclick="setDiff('easy')">EASY</button><button class="setting-btn active" id="diffNormal" onclick="setDiff('normal')">NORMAL</button><button class="setting-btn" id="diffHard" onclick="setDiff('hard')">HARD</button></div></div><div class="setting-row"><span>Sound FX</span><button class="btn btn-sm btn-outline" id="sfxToggle" onclick="toggleSFX()">ON</button></div><div class="setting-row"><span>Music</span><button class="btn btn-sm btn-outline" id="musicToggleBtn" onclick="toggleMusic()">ON</button></div><div class="setting-row"><span>Privacy</span><button class="btn btn-sm btn-outline" onclick="showCMPDialog()">MANAGE</button></div><button class="btn btn-outline btn-sm" onclick="showMenu()">â† BACK</button></div></div>
+    <div class="overlay" id="challengeOverlay"><div class="panel"><h2>ðŸŽ¯ DAILY CHALLENGES</h2><div id="challengeList"></div><p style="font-size:0.65rem;color:#888">Resets: <span id="challengeTimer"></span></p><button class="btn btn-outline btn-sm" onclick="showMenu()">â† BACK</button></div></div>
+    <div class="overlay" id="dailyOverlay"><div class="panel"><h2>ðŸ“… DAILY LOGIN</h2><div id="calendarGrid" class="calendar-grid"></div><p id="dailyTimer" style="color:var(--gold);font-size:0.75rem"></p><button class="btn btn-outline btn-sm" onclick="showMenu()">â† BACK</button></div></div>
+    <div class="overlay" id="gameOverOverlay"><div class="panel"><h2 id="gameOverTitle">GAME OVER</h2><p>Score: <span id="goScore">0</span> | Combo: <span id="goCombo">0</span></p><p>VOLTS: <span id="goVolts">0</span></p><div id="doubleRewardContainer"></div><div id="continueBtnContainer"></div><div id="nextLevelBtnContainer"></div><button class="btn btn-cyan" onclick="restartGame()">ðŸ”„ RETRY</button><button class="btn btn-outline btn-sm" onclick="showMenu()">ðŸ  MENU</button></div></div>
+    <div class="overlay" id="bossVictoryOverlay"><div class="panel"><h2 style="color:var(--gold)">ðŸ† BOSS DEFEATED!</h2><p id="bossRewardText"></p><button class="btn btn-cyan" onclick="showMenu()">ðŸ  MENU</button></div></div>
+    <div class="overlay" id="pauseOverlay"><div class="panel"><h2>â¸ PAUSED</h2><button class="btn btn-cyan" onclick="resumeGame()">â–¶ RESUME</button><button class="btn btn-outline btn-sm" onclick="openShopFromPause()">ðŸ›’ SHOP</button><button class="btn btn-outline btn-sm" onclick="showMenu()">ðŸ  QUIT</button></div></div>
+    <div class="overlay" id="leaderboardOverlay"><div class="panel"><h2>ðŸ“Š TOP 10</h2><div id="leaderboardList"></div><button class="btn btn-outline btn-sm" onclick="showMenu()">â† BACK</button></div></div>
+    <div class="overlay" id="rateOverlay"><div class="panel"><h2>â­ ENJOYING VOLT RUSH?</h2><p style="color:#aaa;font-size:0.8rem">Rate us on Amazon Appstore!</p><button class="btn btn-gold" onclick="rateNow()">â­ RATE NOW</button><button class="btn btn-outline btn-sm" onclick="rateLater()">LATER</button></div></div>
+    <div class="overlay" id="crateOverlay"><div class="panel"><h2>ðŸ“¦ LOOT CRATE</h2><p id="crateRewardText"></p><button class="btn btn-gold" onclick="showMenu()">OK</button></div></div>
+    <div class="overlay" id="adOverlay"><div class="panel"><h2>ðŸ“º REWARDED AD</h2><p id="adTimer">5s</p><button class="btn btn-cyan" id="adCollectBtn" style="display:none" onclick="collectAdReward()">COLLECT +300V</button></div></div>
 </div>
+
+<!-- CMP Consent Dialog (outside game-container, full-screen fixed) -->
+<div id="cmp-overlay">
+    <div id="cmp-dialog">
+        <h2>ðŸ”’ Privacy & Consent</h2>
+        <p>We use data to enhance your experience. Choose which purposes you consent to:</p>
+        <div class="purpose-row">
+            <span>ðŸ›¡ï¸ Essential (required)</span>
+            <span class="always-on">Always On</span>
+        </div>
+        <div class="purpose-row">
+            <span>ðŸ“Š Analytics</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="cmp-analytics" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="purpose-row">
+            <span>ðŸ“º Personalized Ads</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="cmp-ads" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="cmp-buttons">
+            <button class="btn btn-cyan" onclick="cmpAcceptAll()">ACCEPT ALL</button>
+            <button class="btn btn-outline" onclick="cmpSaveChoices()">SAVE CHOICES</button>
+            <button class="btn btn-outline btn-sm" onclick="cmpRejectAll()">REJECT ALL</button>
+        </div>
+        <p class="cmp-footer-link" onclick="cmpShowDetails()">Learn more about how we use your data</p>
+    </div>
+</div>
+
 <script>
 (function(){
-// *** GAME VERSION – increment this to reset all save data ***
+// *** GAME VERSION â€“ increment this to reset all save data ***
 const GAME_VERSION = 2;
+
+// CMP Consent Management
+const CMP_CONSENT_KEY = 'volt_cmp_consent_v1';
+let cmpConsent = loadCMPConsent();
+
+function loadCMPConsent() {
+    try {
+        const raw = localStorage.getItem(CMP_CONSENT_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    return null; // null means no choice made yet
+}
+
+function saveCMPConsent(consent) {
+    cmpConsent = consent;
+    try {
+        localStorage.setItem(CMP_CONSENT_KEY, JSON.stringify(consent));
+    } catch(e) {}
+}
+
+function cmpAcceptAll() {
+    const consent = {
+        essential: true,
+        analytics: true,
+        ads: true,
+        timestamp: Date.now(),
+        version: 1
+    };
+    saveCMPConsent(consent);
+    document.getElementById('cmp-overlay').classList.remove('active');
+    applyCMPConsent(consent);
+}
+
+function cmpSaveChoices() {
+    const consent = {
+        essential: true,
+        analytics: document.getElementById('cmp-analytics').checked,
+        ads: document.getElementById('cmp-ads').checked,
+        timestamp: Date.now(),
+        version: 1
+    };
+    saveCMPConsent(consent);
+    document.getElementById('cmp-overlay').classList.remove('active');
+    applyCMPConsent(consent);
+}
+
+function cmpRejectAll() {
+    const consent = {
+        essential: true,
+        analytics: false,
+        ads: false,
+        timestamp: Date.now(),
+        version: 1
+    };
+    saveCMPConsent(consent);
+    document.getElementById('cmp-overlay').classList.remove('active');
+    applyCMPConsent(consent);
+}
+
+function cmpShowDetails() {
+    alert('This app uses:\n\nâ€¢ Essential data: game progress, settings (stored locally).\n\nâ€¢ Analytics: anonymous usage data to improve the game.\n\nâ€¢ Personalized Ads: to show relevant advertisements.\n\nYou can change your preferences anytime in Settings.');
+}
+
+function applyCMPConsent(consent) {
+    if (!consent) return;
+    console.log('CMP Consent applied:', consent);
+    // If analytics consent is given, initialize analytics
+    if (consent.analytics) {
+        console.log('Analytics enabled');
+        // Initialize analytics SDK here
+    } else {
+        console.log('Analytics disabled');
+    }
+    // If ads consent is given, initialize personalized ads
+    if (consent.ads) {
+        console.log('Personalized ads enabled');
+        // Initialize ad SDK with personalized ads here
+    } else {
+        console.log('Personalized ads disabled - non-personalized ads only');
+        // Initialize ad SDK with non-personalized ads here
+    }
+}
+
+function showCMPDialog() {
+    // Pre-fill with existing choices if available
+    if (cmpConsent) {
+        document.getElementById('cmp-analytics').checked = cmpConsent.analytics;
+        document.getElementById('cmp-ads').checked = cmpConsent.ads;
+    }
+    document.getElementById('cmp-overlay').classList.add('active');
+}
+
+function checkCMPOnStartup() {
+    if (!cmpConsent) {
+        // No consent given yet - show dialog
+        document.getElementById('cmp-overlay').classList.add('active');
+    } else {
+        applyCMPConsent(cmpConsent);
+    }
+}
+
+// Check if consent is older than 365 days - refresh if needed
+function checkCMPExpiry() {
+    if (cmpConsent && cmpConsent.timestamp) {
+        const daysSince = (Date.now() - cmpConsent.timestamp) / (1000 * 60 * 60 * 24);
+        if (daysSince > 365) {
+            localStorage.removeItem(CMP_CONSENT_KEY);
+            cmpConsent = null;
+        }
+    }
+}
 
 const canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
 const container=document.getElementById('game-container'),pauseBtn=document.getElementById('pauseBtn');
@@ -111,7 +272,7 @@ function toast(m){const t=document.createElement('div');t.className='toast';t.te
 let shopFromPause=false,bgGradient=null,musicInterval=null,lastTapSound=0,lastInputTime=0;
 let lastSpawnFrame=0;
 let floatingTexts=[];
-let continueCount = 0; // number of ad‑revives used this run
+let continueCount = 0; // number of ad-revives used this run
 
 function addFloatingText(x,y,txt,color='#fff'){
     floatingTexts.push({x,y,txt,color,life:1.0});
@@ -145,13 +306,13 @@ function startMusic(){
     const notes=[110,146.83,164.81,196,220];let ni=0;
     musicInterval=setInterval(()=>{if(musicPlaying)arp.frequency.value=notes[ni%5];ni++;},250);
     musicNodes=[bass,arp,mg];musicPlaying=true;
-    document.getElementById('musicBtn').textContent='🔊';document.getElementById('musicToggleBtn').textContent='ON';
+    document.getElementById('musicBtn').textContent='ðŸ”Š';document.getElementById('musicToggleBtn').textContent='ON';
 }
 function stopMusic(){
     if(musicInterval){clearInterval(musicInterval);musicInterval=null;}
     musicNodes.forEach(n=>{try{if(n.stop)n.stop();if(n.disconnect)n.disconnect();}catch(e){}});
     musicNodes=[];musicPlaying=false;
-    document.getElementById('musicBtn').textContent='🔇';document.getElementById('musicToggleBtn').textContent='OFF';
+    document.getElementById('musicBtn').textContent='ðŸ”‡';document.getElementById('musicToggleBtn').textContent='OFF';
 }
 function toggleMusic(){initAudio();if(musicPlaying)stopMusic();else startMusic()}
 function toggleSFX(){sfxOn=!sfxOn;document.getElementById('sfxToggle').textContent=sfxOn?'ON':'OFF';s.click()}
@@ -207,9 +368,9 @@ class Tile{
         const cx=this.x+this.w/2,cy=this.y+this.h/2;
         ctx.save();ctx.globalAlpha=this.o;ctx.translate(cx,cy);ctx.scale(this.sc,this.sc);
         let cl,icon,ic;
-        if(this.tp=='r'){cl='#ff1744';icon='✖';ic='#fff'}
-        else if(this.tp=='g'){cl='#ffd740';icon='⭐';ic='#000'}
-        else{cl=fv?`hsl(${(fc*1.2)%360},90%,55%)`:'#00e5ff';icon=fv?'✓':'';ic='#fff'}
+        if(this.tp=='r'){cl='#ff1744';icon='âœ–';ic='#fff'}
+        else if(this.tp=='g'){cl='#ffd740';icon='â­';ic='#000'}
+        else{cl=fv?`hsl(${(fc*1.2)%360},90%,55%)`:'#00e5ff';icon=fv?'âœ“':'';ic='#fff'}
         ctx.shadowColor=cl;ctx.shadowBlur=14;
         const r=10,hw=this.w/2,hh=this.h/2;
         ctx.fillStyle=cl;
@@ -278,7 +439,7 @@ function patt(p,mid){
     };
     return g[p]||g.st;
 }
-const mb=[{id:'st',nm:'Standard',pt:'st',sp:4.2,lv:3,sr:38},{id:'sv',nm:'Survival (1❤️)',pt:'ch',sp:4.5,lv:1,sr:32},{id:'pr',nm:'Precision',pt:'mr',sp:2.8,lv:3,sr:55},{id:'fv',nm:'Fever Rush',pt:'bu',sp:4.0,lv:3,sr:40,sf:true},{id:'hn',nm:'Hunter',pt:'tn',sp:3.8,lv:3,sr:42,gb:true,nr:true},{id:'es',nm:'Escape',pt:'wv',sp:5.5,lv:2,sr:22},{id:'cb',nm:'Combo King',pt:'zz',sp:3.6,lv:3,sr:40},{id:'en',nm:'Endless',pt:'en',sp:4.5,lv:3,sr:34,endless:true}];
+const mb=[{id:'st',nm:'Standard',pt:'st',sp:4.2,lv:3,sr:38},{id:'sv',nm:'Survival (1â¤ï¸)',pt:'ch',sp:4.5,lv:1,sr:32},{id:'pr',nm:'Precision',pt:'mr',sp:2.8,lv:3,sr:55},{id:'fv',nm:'Fever Rush',pt:'bu',sp:4.0,lv:3,sr:40,sf:true},{id:'hn',nm:'Hunter',pt:'tn',sp:3.8,lv:3,sr:42,gb:true,nr:true},{id:'es',nm:'Escape',pt:'wv',sp:5.5,lv:2,sr:22},{id:'cb',nm:'Combo King',pt:'zz',sp:3.6,lv:3,sr:40},{id:'en',nm:'Endless',pt:'en',sp:4.5,lv:3,sr:34,endless:true}];
 const ml={st:{tp:'score',lvls:[1000,2000,3500,5000,7500,10000,13000,17000,21000,25000]},sv:{tp:'time',lvls:[60,75,90,110,130,155,180,210,250,300]},pr:{tp:'score',lvls:[1500,3000,5000,7500,10000,14000,19000,25000,30000,35000]},fv:{tp:'combo',lvls:[30,45,60,80,100,125,150,175,190,200]},hn:{tp:'gold',lvls:[10,15,20,25,30,38,46,55,65,75]},es:{tp:'score',lvls:[1500,3000,5000,7500,10000,15000,20000,28000,35000,45000]},cb:{tp:'combo',lvls:[60,85,110,140,170,200,240,280,320,380]}};
 
 function startMission(id,bf=false){
@@ -290,7 +451,7 @@ function startMission(id,bf=false){
     const[sp,ra]=applyDiff(base.sp,base.sr);spd=Math.min(sp,9);srt=ra;st=0;pat=base.pt;
     boss=bf;bhp=bf?45:0;bmhp=bhp;bph=0;bat=30;gc=0;sm=false;db=false;fc=0;matchGold=0;
     bossType=bf?Math.floor(save.boss%5):0;gs=bf?'boss':'playing';activeShields=save.pu.sh||0;
-    continueCount = 0; // reset ad‑revives for this run
+    continueCount = 0; // reset ad-revives for this run
     goState=null;invincibleFrames=0;shopFromPause=false;
     if(ctimer){clearTimeout(ctimer);ctimer=null}if(cpanel&&cpanel.parentNode){cpanel.parentNode.removeChild(cpanel);cpanel=null}
     if(menuAid){cancelAnimationFrame(menuAid);menuAid=null}
@@ -301,14 +462,14 @@ function startMission(id,bf=false){
     document.getElementById('bossBar').style.display=bf?'block':'none';
     document.getElementById('bossName').style.display=bf?'block':'none';
     document.getElementById('bossHint').style.display=bf?'block':'none';
-    if(bf)document.getElementById('bossName').textContent='👾 '+bossNames[bossType];
+    if(bf)document.getElementById('bossName').textContent='ðŸ‘¾ '+bossNames[bossType];
     pauseBtn.style.display='flex';updHUD();
     lastLoopTime=performance.now();
     if(aid)cancelAnimationFrame(aid);aid=null;loop();
 }
 function restartGame(){if(mis)startMission(mis.id,boss);else startMission('st',false)}
 function pauseGame(){if(gs==='playing'||gs==='boss'){gs='paused';if(aid)cancelAnimationFrame(aid);aid=null;showOV('pause')}}
-function resumeGame(){hideAll();gs=boss?'boss':'playing';pauseBtn.style.display='flex';document.getElementById('bossBar').style.display=boss?'block':'none';document.getElementById('bossName').style.display=boss?'block':'none';document.getElementById('bossHint').style.display=boss?'block':'none';if(boss)document.getElementById('bossName').textContent='👾 '+bossNames[bossType];lastLoopTime=performance.now();updHUD();if(aid)cancelAnimationFrame(aid);aid=null;loop()}
+function resumeGame(){hideAll();gs=boss?'boss':'playing';pauseBtn.style.display='flex';document.getElementById('bossBar').style.display=boss?'block':'none';document.getElementById('bossName').style.display=boss?'block':'none';document.getElementById('bossHint').style.display=boss?'block':'none';if(boss)document.getElementById('bossName').textContent='ðŸ‘¾ '+bossNames[bossType];lastLoopTime=performance.now();updHUD();if(aid)cancelAnimationFrame(aid);aid=null;loop()}
 function loop(){
     if(gs!=='playing'&&gs!=='boss'){aid=null;return}
     const now=performance.now();
@@ -468,36 +629,36 @@ function stopMenuAnimation(){if(menuAid){cancelAnimationFrame(menuAid);menuAid=n
 function saveGOState(){goState={sc:sc,cb:cb,mcb:mcb,lv:lv,fv:fv,ft:ft,gc:gc,fc:fc,spd:spd,srt:srt,st:st,pat:pat,boss:boss,bhp:bhp,bmhp:bmhp,bph:bph,bat:bat,bcx:bcx,bcy:bcy,bossType:bossType,activeShields:activeShields,td:tiles.filter(t=>!t.td).map(t=>({l:t.l,y:t.y,tp:t.tp})),lastSpawnFrame:lastSpawnFrame}}
 function restoreGOState(){if(!goState)return false;const g=goState;sc=g.sc;cb=0;mcb=g.mcb;lv=Math.max(g.lv,1);fv=false;ft=0;gc=g.gc;fc=g.fc;spd=g.spd;srt=g.srt;st=g.st;pat=g.pat;boss=g.boss;bhp=g.bhp;bmhp=g.bmhp;bph=g.bph;bat=g.bat;bcx=g.bcx;bcy=g.bcy;bossType=g.bossType||0;activeShields=g.activeShields;lastSpawnFrame=g.lastSpawnFrame||fc;tiles=[];for(const td of g.td)tiles.push(gT(td.l,td.y,td.tp));goState=null;invincibleFrames=90;return true}
 
-function endGame(w){if(aid)cancelAnimationFrame(aid);aid=null;gs='gameover';document.getElementById('bossBar').style.display='none';document.getElementById('bossName').style.display='none';document.getElementById('bossHint').style.display='none';pauseBtn.style.display='none';if(!w)saveGOState();save.games++;if(sc>save.hi)save.hi=sc;save.lb.push(sc);save.lb.sort((a,b)=>b-a);if(save.lb.length>10)save.lb=save.lb.slice(0,10);let ev=0;if(w&&mis&&!mis.endless){save.done++;ev=Math.floor(sc/30)+20;lastEarnedV=ev;if(boss){save.boss++;ev+=500+Math.floor(Math.random()*500);save.crates++;save.trophies=Math.min(save.trophies+1,5);if(save.trophies>=5&&!save.owned.includes('void')){save.owned.push('void');save.skin='void';toast('🏆 Void Skin Unlocked!')}}if(Math.random()<0.12)save.crates++;const prog=save.mp;const mid=mis.id;if(prog[mid]&&lvl===prog[mid]&&prog[mid]<10)prog[mid]++;else if(prog[mid]&&lvl>=10){prog[mid]=1;addV(500);toast('🌟 Prestige! +500V')}updCal();updateChallenges(sc,gc,mcb);save.rateCount++;if(save.rateCount>=2&&!save.rateAsked){save.rateAsked=true;saveAll();setTimeout(()=>showOV('rateOverlay'),500);return}}else if(mis&&mis.endless){ev=Math.floor(sc/30);lastEarnedV=ev;updateChallenges(sc,gc,mcb)}if(w){ev+=Math.floor(sc/30);if(db)ev=Math.floor(ev*2);lastEarnedV=ev}checkAch();saveAll();updUI();updHUD();document.getElementById('goScore').textContent=sc;document.getElementById('goCombo').textContent=mcb;document.getElementById('goVolts').textContent=ev;if(w&&!boss){spawnConfetti();s.victory()}if(w&&boss){s.bossDeath();spawnConfetti()}showResultScreen(w,ev)}
+function endGame(w){if(aid)cancelAnimationFrame(aid);aid=null;gs='gameover';document.getElementById('bossBar').style.display='none';document.getElementById('bossName').style.display='none';document.getElementById('bossHint').style.display='none';pauseBtn.style.display='none';if(!w)saveGOState();save.games++;if(sc>save.hi)save.hi=sc;save.lb.push(sc);save.lb.sort((a,b)=>b-a);if(save.lb.length>10)save.lb=save.lb.slice(0,10);let ev=0;if(w&&mis&&!mis.endless){save.done++;ev=Math.floor(sc/30)+20;lastEarnedV=ev;if(boss){save.boss++;ev+=500+Math.floor(Math.random()*500);save.crates++;save.trophies=Math.min(save.trophies+1,5);if(save.trophies>=5&&!save.owned.includes('void')){save.owned.push('void');save.skin='void';toast('ðŸ† Void Skin Unlocked!')}}if(Math.random()<0.12)save.crates++;const prog=save.mp;const mid=mis.id;if(prog[mid]&&lvl===prog[mid]&&prog[mid]<10)prog[mid]++;else if(prog[mid]&&lvl>=10){prog[mid]=1;addV(500);toast('ðŸŒŸ Prestige! +500V')}updCal();updateChallenges(sc,gc,mcb);save.rateCount++;if(save.rateCount>=2&&!save.rateAsked){save.rateAsked=true;saveAll();setTimeout(()=>showOV('rateOverlay'),500);return}}else if(mis&&mis.endless){ev=Math.floor(sc/30);lastEarnedV=ev;updateChallenges(sc,gc,mcb)}if(w){ev+=Math.floor(sc/30);if(db)ev=Math.floor(ev*2);lastEarnedV=ev}checkAch();saveAll();updUI();updHUD();document.getElementById('goScore').textContent=sc;document.getElementById('goCombo').textContent=mcb;document.getElementById('goVolts').textContent=ev;if(w&&!boss){spawnConfetti();s.victory()}if(w&&boss){s.bossDeath();spawnConfetti()}showResultScreen(w,ev)}
 function showResultScreen(w,ev){
-    document.getElementById('gameOverTitle').textContent=w?(boss?'🏆 BOSS DEFEATED!':'🎉 MISSION COMPLETE!'):'GAME OVER';
+    document.getElementById('gameOverTitle').textContent=w?(boss?'ðŸ† BOSS DEFEATED!':'ðŸŽ‰ MISSION COMPLETE!'):'GAME OVER';
     document.getElementById('gameOverTitle').style.color=w?'var(--gold)':'var(--red)';
     const nxt=document.getElementById('nextLevelBtnContainer');
-    if(w&&mis&&!mis.endless&&!boss){const mid=mis.id;const cl=save.mp[mid]||1;if(cl<=10)nxt.innerHTML=`<button class="btn btn-cyan" onclick="startMission('${mid}')">NEXT LEVEL ▶</button>`;else nxt.innerHTML='<button class="btn btn-cyan" onclick="startMission(\''+mid+'\')">PRESTIGE 🔄</button>'}else nxt.innerHTML='';
-    if(w&&!boss){document.getElementById('doubleRewardContainer').innerHTML=`<div style="margin:8px 0;padding:10px;background:#1e1e35;border-radius:10px;border:2px solid var(--gold)"><p style="color:#ffd740;font-weight:700">📺 DOUBLE YOUR REWARD?</p><button class="btn btn-gold" onclick="startDoubleCountdown()">WATCH AD (+${lastEarnedV}V)</button><button class="btn btn-outline btn-sm" onclick="cancelDouble()">NO THANKS</button></div>`;}else{document.getElementById('doubleRewardContainer').innerHTML='';}
+    if(w&&mis&&!mis.endless&&!boss){const mid=mis.id;const cl=save.mp[mid]||1;if(cl<=10)nxt.innerHTML=`<button class="btn btn-cyan" onclick="startMission('${mid}')">NEXT LEVEL â–¶</button>`;else nxt.innerHTML='<button class="btn btn-cyan" onclick="startMission(\''+mid+'\')">PRESTIGE ðŸ”„</button>'}else nxt.innerHTML='';
+    if(w&&!boss){document.getElementById('doubleRewardContainer').innerHTML=`<div style="margin:8px 0;padding:10px;background:#1e1e35;border-radius:10px;border:2px solid var(--gold)"><p style="color:#ffd740;font-weight:700">ðŸ“º DOUBLE YOUR REWARD?</p><button class="btn btn-gold" onclick="startDoubleCountdown()">WATCH AD (+${lastEarnedV}V)</button><button class="btn btn-outline btn-sm" onclick="cancelDouble()">NO THANKS</button></div>`;}else{document.getElementById('doubleRewardContainer').innerHTML='';}
     // Continue button only if not a boss, not a win, state saved, and less than 2 continues used
     if(!w&&!boss&&goState&&continueCount<2){
-        document.getElementById('continueBtnContainer').innerHTML=`<button class="btn btn-continue" onclick="showContinueAd()">📺 CONTINUE (${2-continueCount} left)</button> <button class="btn btn-outline btn-sm" onclick="skipContinue()">❌ NO</button>`;
+        document.getElementById('continueBtnContainer').innerHTML=`<button class="btn btn-continue" onclick="showContinueAd()">ðŸ“º CONTINUE (${2-continueCount} left)</button> <button class="btn btn-outline btn-sm" onclick="skipContinue()">âŒ NO</button>`;
     }else{
         document.getElementById('continueBtnContainer').innerHTML='';
     }
     if(w&&!boss)addV(ev);
-    if(w&&boss){document.getElementById('bossRewardText').textContent=`+${ev}V | 🏆 ${save.trophies}/5 | 📦 Crate`;showOV('bossVictory');}else{showOV('gameOver');}
+    if(w&&boss){document.getElementById('bossRewardText').textContent=`+${ev}V | ðŸ† ${save.trophies}/5 | ðŸ“¦ Crate`;showOV('bossVictory');}else{showOV('gameOver');}
 }
-function startDoubleCountdown(){if(lastEarnedV<=0)return;document.getElementById('doubleRewardContainer').innerHTML=`<div style="margin:8px 0;padding:10px;background:#1e1e35;border-radius:10px;border:2px solid var(--gold)"><p style="color:#ffd740;font-weight:700">📺 AD PLAYING...</p><p id="doubleCountdown" style="color:#fff;font-size:1.5rem;margin:5px 0">5</p><button class="btn btn-gold" id="doubleCollectBtn" style="display:none" onclick="collectDoubleReward()">COLLECT ${lastEarnedV}V</button></div>`;let r=5;const ce=document.getElementById('doubleCountdown'),cb=document.getElementById('doubleCollectBtn');function tick(){r--;if(r<=0){ce.textContent='✅ Ready!';cb.style.display='inline-block';return}ce.textContent=r;setTimeout(tick,1000)}setTimeout(tick,1000)}
-function collectDoubleReward(){if(lastEarnedV>0){addV(lastEarnedV);toast('🎉 Doubled! +'+lastEarnedV+'V')}document.getElementById('doubleRewardContainer').innerHTML=''}
+function startDoubleCountdown(){if(lastEarnedV<=0)return;document.getElementById('doubleRewardContainer').innerHTML=`<div style="margin:8px 0;padding:10px;background:#1e1e35;border-radius:10px;border:2px solid var(--gold)"><p style="color:#ffd740;font-weight:700">ðŸ“º AD PLAYING...</p><p id="doubleCountdown" style="color:#fff;font-size:1.5rem;margin:5px 0">5</p><button class="btn btn-gold" id="doubleCollectBtn" style="display:none" onclick="collectDoubleReward()">COLLECT ${lastEarnedV}V</button></div>`;let r=5;const ce=document.getElementById('doubleCountdown'),cb=document.getElementById('doubleCollectBtn');function tick(){r--;if(r<=0){ce.textContent='âœ… Ready!';cb.style.display='inline-block';return}ce.textContent=r;setTimeout(tick,1000)}setTimeout(tick,1000)}
+function collectDoubleReward(){if(lastEarnedV>0){addV(lastEarnedV);toast('ðŸŽ‰ Doubled! +'+lastEarnedV+'V')}document.getElementById('doubleRewardContainer').innerHTML=''}
 function cancelDouble(){document.getElementById('doubleRewardContainer').innerHTML=''}
 function skipContinue(){if(ctimer){clearTimeout(ctimer);ctimer=null}if(cpanel&&cpanel.parentNode){cpanel.parentNode.removeChild(cpanel);cpanel=null}goState=null;continueCount=99;/* prevent further continues */ showOV('gameOver')}
-function showContinueAd(){if(cpanel&&cpanel.parentNode)cpanel.parentNode.removeChild(cpanel);cpanel=document.createElement('div');cpanel.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;z-index:25;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';cpanel.innerHTML=`<div class="panel" style="border-color:#ff6d00"><h2 style="color:#ff6d00">📺 CONTINUE?</h2><p style="color:#aaa">Watch ad to continue!</p><p id="ctimerText" style="color:#fff;font-size:1.8rem;font-weight:700;margin:10px 0">5</p><button class="btn btn-continue" id="cCollectBtn" style="display:none">🎮 CONTINUE</button><button class="btn btn-outline btn-sm" id="cCancelBtn">❌ NO</button></div>`;container.appendChild(cpanel);const tel=cpanel.querySelector('#ctimerText'),cbtn=cpanel.querySelector('#cCollectBtn'),xbtn=cpanel.querySelector('#cCancelBtn');cbtn.onclick=function(){collectContinue()};xbtn.onclick=function(){skipContinue()};let r=5;tel.textContent=r;function tick(){r--;if(r<=0){tel.textContent='✅ Ready!';cbtn.style.display='inline-block';ctimer=null;return}tel.textContent=r;ctimer=setTimeout(tick,1000)}ctimer=setTimeout(tick,1000)}
-function collectContinue(){if(ctimer){clearTimeout(ctimer);ctimer=null}if(cpanel&&cpanel.parentNode){cpanel.parentNode.removeChild(cpanel);cpanel=null}if(!goState){toast('Error!');showMenu();return}hideAll();if(!restoreGOState()){toast('Error!');showMenu();return}continueCount++;invincibleFrames=90;gs=boss?'boss':'playing';document.getElementById('bossBar').style.display=boss?'block':'none';document.getElementById('bossName').style.display=boss?'block':'none';document.getElementById('bossHint').style.display=boss?'block':'none';if(boss)document.getElementById('bossName').textContent='👾 '+bossNames[bossType];pauseBtn.style.display='flex';updHUD();if(aid)cancelAnimationFrame(aid);aid=null;loop();}
+function showContinueAd(){if(cpanel&&cpanel.parentNode)cpanel.parentNode.removeChild(cpanel);cpanel=document.createElement('div');cpanel.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;z-index:25;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';cpanel.innerHTML=`<div class="panel" style="border-color:#ff6d00"><h2 style="color:#ff6d00">ðŸ“º CONTINUE?</h2><p style="color:#aaa">Watch ad to continue!</p><p id="ctimerText" style="color:#fff;font-size:1.8rem;font-weight:700;margin:10px 0">5</p><button class="btn btn-continue" id="cCollectBtn" style="display:none">ðŸŽ® CONTINUE</button><button class="btn btn-outline btn-sm" id="cCancelBtn">âŒ NO</button></div>`;container.appendChild(cpanel);const tel=cpanel.querySelector('#ctimerText'),cbtn=cpanel.querySelector('#cCollectBtn'),xbtn=cpanel.querySelector('#cCancelBtn');cbtn.onclick=function(){collectContinue()};xbtn.onclick=function(){skipContinue()};let r=5;tel.textContent=r;function tick(){r--;if(r<=0){tel.textContent='âœ… Ready!';cbtn.style.display='inline-block';ctimer=null;return}tel.textContent=r;ctimer=setTimeout(tick,1000)}ctimer=setTimeout(tick,1000)}
+function collectContinue(){if(ctimer){clearTimeout(ctimer);ctimer=null}if(cpanel&&cpanel.parentNode){cpanel.parentNode.removeChild(cpanel);cpanel=null}if(!goState){toast('Error!');showMenu();return}hideAll();if(!restoreGOState()){toast('Error!');showMenu();return}continueCount++;invincibleFrames=90;gs=boss?'boss':'playing';document.getElementById('bossBar').style.display=boss?'block':'none';document.getElementById('bossName').style.display=boss?'block':'none';document.getElementById('bossHint').style.display=boss?'block':'none';if(boss)document.getElementById('bossName').textContent='ðŸ‘¾ '+bossNames[bossType];pauseBtn.style.display='flex';updHUD();if(aid)cancelAnimationFrame(aid);aid=null;loop();}
 
 const challengeDefs=[{desc:'Score 2000+',check:(s,g,c)=>s>=2000,reward:300},{desc:'15 gold tiles',check:(s,g,c)=>g>=15,reward:250},{desc:'50 combo',check:(s,g,c)=>c>=50,reward:400}];
-function updateChallenges(sc,gc,mcb){const today=new Date().toDateString();if(save.challenges.date!==today){save.challenges={date:today,claimed:[false,false,false]}}const c=save.challenges;if(!c.claimed[0]&&challengeDefs[0].check(sc,gc,mcb)){c.claimed[0]=true;addV(challengeDefs[0].reward);toast('🎯 +'+challengeDefs[0].reward+'V')}if(!c.claimed[1]&&challengeDefs[1].check(sc,gc,mcb)){c.claimed[1]=true;addV(challengeDefs[1].reward);toast('🎯 +'+challengeDefs[1].reward+'V')}if(!c.claimed[2]&&challengeDefs[2].check(sc,gc,mcb)){c.claimed[2]=true;addV(challengeDefs[2].reward);toast('🎯 +'+challengeDefs[2].reward+'V')}saveAll()}
-function buildChallengeUI(){const today=new Date().toDateString();if(save.challenges.date!==today){save.challenges={date:today,claimed:[false,false,false]};saveAll()}const list=document.getElementById('challengeList');let h='';challengeDefs.forEach((d,i)=>{const done=save.challenges.claimed[i];h+=`<div style="display:inline-block;background:#1e1e35;border:2px solid ${done?'#555':'var(--gold)'};border-radius:10px;padding:6px 10px;margin:3px;font-size:0.7rem;${done?'text-decoration:line-through;opacity:0.5':''}">${done?'✅':''} ${d.desc} | +${d.reward}V</div><br>`});list.innerHTML=h;const now=new Date();const reset=new Date(now);reset.setHours(24,0,0,0);const diff=reset-now;document.getElementById('challengeTimer').textContent=`${Math.floor(diff/3600000)}h ${Math.floor((diff%3600000)/60000)}m`}
+function updateChallenges(sc,gc,mcb){const today=new Date().toDateString();if(save.challenges.date!==today){save.challenges={date:today,claimed:[false,false,false]}}const c=save.challenges;if(!c.claimed[0]&&challengeDefs[0].check(sc,gc,mcb)){c.claimed[0]=true;addV(challengeDefs[0].reward);toast('ðŸŽ¯ +'+challengeDefs[0].reward+'V')}if(!c.claimed[1]&&challengeDefs[1].check(sc,gc,mcb)){c.claimed[1]=true;addV(challengeDefs[1].reward);toast('ðŸŽ¯ +'+challengeDefs[1].reward+'V')}if(!c.claimed[2]&&challengeDefs[2].check(sc,gc,mcb)){c.claimed[2]=true;addV(challengeDefs[2].reward);toast('ðŸŽ¯ +'+challengeDefs[2].reward+'V')}saveAll()}
+function buildChallengeUI(){const today=new Date().toDateString();if(save.challenges.date!==today){save.challenges={date:today,claimed:[false,false,false]};saveAll()}const list=document.getElementById('challengeList');let h='';challengeDefs.forEach((d,i)=>{const done=save.challenges.claimed[i];h+=`<div style="display:inline-block;background:#1e1e35;border:2px solid ${done?'#555':'var(--gold)'};border-radius:10px;padding:6px 10px;margin:3px;font-size:0.7rem;${done?'text-decoration:line-through;opacity:0.5':''}">${done?'âœ…':''} ${d.desc} | +${d.reward}V</div><br>`});list.innerHTML=h;const now=new Date();const reset=new Date(now);reset.setHours(24,0,0,0);const diff=reset-now;document.getElementById('challengeTimer').textContent=`${Math.floor(diff/3600000)}h ${Math.floor((diff%3600000)/60000)}m`}
 function showDailyChallenges(){buildChallengeUI();showOV('challenge')}
 function spawnConfetti(){
     if(container.querySelectorAll('.confetti').length > 10) return;
-    const e=['🎉','✨','⭐','💫','🌟'];
+    const e=['ðŸŽ‰','âœ¨','â­','ðŸ’«','ðŸŒŸ'];
     for(let i=0;i<5;i++){
         const el=document.createElement('div');
         el.className='confetti';
@@ -507,7 +668,7 @@ function spawnConfetti(){
         setTimeout(()=>el.remove(),1800);
     }
 }
-function rateNow(){hideAll();toast('⭐ Thank you!');save.rateAsked=true;saveAll();showMenu()}
+function rateNow(){hideAll();toast('â­ Thank you!');save.rateAsked=true;saveAll();showMenu()}
 function rateLater(){hideAll();save.rateCount=0;save.rateAsked=false;saveAll();showMenu()}
 function hasUnclaimedChallenges(){const today=new Date().toDateString();if(save.challenges.date!==today)return true;return save.challenges.claimed.some(c=>!c)}
 function hasUnclaimedDaily(){const today=new Date().toDateString();return save.cal.lc!==today}
@@ -561,7 +722,7 @@ function handle(px,py){
                 sc+=fv?15:10;
                 if(cb>=35&&!fv){
                     fv=true;ft=300;s.fever();
-                    addFloatingText(px,py,'🔥 FEVER!','#ffd740');
+                    addFloatingText(px,py,'ðŸ”¥ FEVER!','#ffd740');
                 }
             }else if(t.tp=='g'){
                 s.gold();sc+=50;cb+=2;if(cb>mcb)mcb=cb;gc++;matchGold++;
@@ -614,16 +775,16 @@ function updHUD(){
 }
 function updUI(){document.getElementById('menuVolts').textContent=save.volts;document.getElementById('shopVolts').textContent=save.volts;document.getElementById('menuTrophies').textContent=save.trophies;document.getElementById('missionsDone').textContent=save.done;document.getElementById('bossesDone').textContent=save.boss;document.getElementById('crateCount').textContent=save.crates;buildML();buildShop();buildAch();buildCal();updDailyTimer();updateSettingsUI();updateNotificationBadges()}
 function updateSettingsUI(){document.querySelectorAll('#settingsOverlay .setting-btn').forEach(b=>b.classList.remove('active'));const db=document.getElementById('diff'+save.diff.charAt(0).toUpperCase()+save.diff.slice(1));if(db)db.classList.add('active');document.getElementById('sfxToggle').textContent=sfxOn?'ON':'OFF';document.getElementById('musicToggleBtn').textContent=musicPlaying?'ON':'OFF'}
-function buildML(){let h='';mb.forEach(m=>{const lv=m.id==='en'?'∞':save.mp[m.id]||1;const tg=m.id==='en'?'Endless':ml[m.id]?.lvls[Math.min(lv-1,9)]||'?';h+=`<button class="btn btn-outline btn-sm" style="width:100%;margin:2px 0" onclick="startMission('${m.id}')">${m.nm} Lv${Math.min(lv,10)}: ${tg}</button>`});if(save.done>0&&save.done%10===0&&save.boss<Math.floor(save.done/10)){h+='<button class="btn btn-red" style="width:100%;margin:6px 0" onclick="startMission(\'st\',true)">👾 BOSS: '+bossNames[save.boss%5]+'</button>'}document.getElementById('missionList').innerHTML=h}
-function buildShop(){const sk=[{id:'cyan',nm:'Cyan',pr:0,dt:'skin-cyan'},{id:'magenta',nm:'Magenta',pr:5000,dt:'skin-magenta'},{id:'gold',nm:'Gold',pr:12000,dt:'skin-gold'},{id:'inferno',nm:'Inferno',pr:20000,dt:'skin-inferno'},{id:'neon',nm:'Neon',pr:25000,dt:'skin-neon'},{id:'void',nm:'Void',pr:0,dt:'skin-void',trophy:true}];const pu=[{id:'sh',nm:'🛡️ Shield',pr:800,desc:'Blocks one hit'},{id:'sm',nm:'⏳ Slow-Mo',pr:1200,desc:'Slows tiles 8s'},{id:'db',nm:'💎 2x Volts',pr:1500,desc:'Double volts 10s'}];let h='<h3>Skins</h3>';sk.forEach(s=>{const ow=s.trophy?(save.trophies>=5):save.owned.includes(s.id);const eq=save.skin===s.id;h+=`<div class="shop-item"><span class="skin-dot ${s.dt}"></span><b style="flex:1">${s.nm}</b>${ow?(eq?'<span class="badge">EQUIPPED</span>':`<button class="btn btn-sm btn-outline" onclick="equipSkin('${s.id}')">USE</button>`):(s.trophy&&save.trophies<5?`<span style="color:#888;font-size:0.7rem">🔒${save.trophies}/5</span>`:`<button class="btn btn-sm btn-gold" onclick="buySkin('${s.id}',${s.pr})">💰${s.pr}V</button>`)}</div>`});h+='<h3>Power-Ups</h3>';pu.forEach(p=>{h+=`<div class="shop-item"><b style="flex:1">${p.nm}</b><span style="font-size:0.65rem;color:#888">${p.desc}</span><span>${save.pu[p.id]||0}</span><button class="btn btn-sm btn-gold" onclick="buyPU('${p.id}',${p.pr})">💰${p.pr}V</button></div>`});document.getElementById('shopItems').innerHTML=h}
-function buildAch(){const list=[{id:'fg',nm:'First Spark',ck:()=>save.games>=1},{id:'sc',nm:'Centurion',ck:()=>save.hi>=500},{id:'cb',nm:'Fever Starter',ck:()=>save.ach._cb||false},{id:'m5',nm:'Dedicated',ck:()=>save.done>=15},{id:'bs',nm:'Boss Slayer',ck:()=>save.boss>=5},{id:'tr',nm:'Trophy Hunter',ck:()=>save.trophies>=3}];let h='';list.forEach(a=>{const unl=save.ach[a.id]||a.ck();if(unl&&!save.ach[a.id]){save.ach[a.id]=true;saveAll()}h+=`<div class="stat-row"><span>${unl?'✅':'🔒'} ${a.nm}</span></div>`});document.getElementById('achieveList').innerHTML=h}
+function buildML(){let h='';mb.forEach(m=>{const lv=m.id==='en'?'âˆž':save.mp[m.id]||1;const tg=m.id==='en'?'Endless':ml[m.id]?.lvls[Math.min(lv-1,9)]||'?';h+=`<button class="btn btn-outline btn-sm" style="width:100%;margin:2px 0" onclick="startMission('${m.id}')">${m.nm} Lv${Math.min(lv,10)}: ${tg}</button>`});if(save.done>0&&save.done%10===0&&save.boss<Math.floor(save.done/10)){h+='<button class="btn btn-red" style="width:100%;margin:6px 0" onclick="startMission(\'st\',true)">ðŸ‘¾ BOSS: '+bossNames[save.boss%5]+'</button>'}document.getElementById('missionList').innerHTML=h}
+function buildShop(){const sk=[{id:'cyan',nm:'Cyan',pr:0,dt:'skin-cyan'},{id:'magenta',nm:'Magenta',pr:5000,dt:'skin-magenta'},{id:'gold',nm:'Gold',pr:12000,dt:'skin-gold'},{id:'inferno',nm:'Inferno',pr:20000,dt:'skin-inferno'},{id:'neon',nm:'Neon',pr:25000,dt:'skin-neon'},{id:'void',nm:'Void',pr:0,dt:'skin-void',trophy:true}];const pu=[{id:'sh',nm:'ðŸ›¡ï¸ Shield',pr:800,desc:'Blocks one hit'},{id:'sm',nm:'â³ Slow-Mo',pr:1200,desc:'Slows tiles 8s'},{id:'db',nm:'ðŸ’Ž 2x Volts',pr:1500,desc:'Double volts 10s'}];let h='<h3>Skins</h3>';sk.forEach(s=>{const ow=s.trophy?(save.trophies>=5):save.owned.includes(s.id);const eq=save.skin===s.id;h+=`<div class="shop-item"><span class="skin-dot ${s.dt}"></span><b style="flex:1">${s.nm}</b>${ow?(eq?'<span class="badge">EQUIPPED</span>':`<button class="btn btn-sm btn-outline" onclick="equipSkin('${s.id}')">USE</button>`):(s.trophy&&save.trophies<5?`<span style="color:#888;font-size:0.7rem">ðŸ”’${save.trophies}/5</span>`:`<button class="btn btn-sm btn-gold" onclick="buySkin('${s.id}',${s.pr})">ðŸ’°${s.pr}V</button>`)}</div>`});h+='<h3>Power-Ups</h3>';pu.forEach(p=>{h+=`<div class="shop-item"><b style="flex:1">${p.nm}</b><span style="font-size:0.65rem;color:#888">${p.desc}</span><span>${save.pu[p.id]||0}</span><button class="btn btn-sm btn-gold" onclick="buyPU('${p.id}',${p.pr})">ðŸ’°${p.pr}V</button></div>`});document.getElementById('shopItems').innerHTML=h}
+function buildAch(){const list=[{id:'fg',nm:'First Spark',ck:()=>save.games>=1},{id:'sc',nm:'Centurion',ck:()=>save.hi>=500},{id:'cb',nm:'Fever Starter',ck:()=>save.ach._cb||false},{id:'m5',nm:'Dedicated',ck:()=>save.done>=15},{id:'bs',nm:'Boss Slayer',ck:()=>save.boss>=5},{id:'tr',nm:'Trophy Hunter',ck:()=>save.trophies>=3}];let h='';list.forEach(a=>{const unl=save.ach[a.id]||a.ck();if(unl&&!save.ach[a.id]){save.ach[a.id]=true;saveAll()}h+=`<div class="stat-row"><span>${unl?'âœ…':'ðŸ”’'} ${a.nm}</span></div>`});document.getElementById('achieveList').innerHTML=h}
 function checkAch(){if(mcb>=35)save.ach._cb=true;saveAll()}
-function buildCal(){const g=document.getElementById('calendarGrid');const dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];const rw=[200,200,300,300,400,500,600];const td=new Date().getDay(),ts=new Date().toDateString();let h='';for(let i=0;i<7;i++){const cl=save.cal.cd.includes(i);h+=`<div class="cal-day ${cl?'claimed':''} ${(i===td&&save.cal.lc!==ts)?'today':''}">${dn[i]}<br><span style="font-weight:700;color:var(--gold)">${cl?'✅':rw[i]+'V'}</span></div>`}g.innerHTML=h}
-function updDailyTimer(){const ts=new Date().toDateString();const el=document.getElementById('dailyTimer');if(save.cal.lc===ts){el.textContent='✅ Claimed!';return}const now=new Date();const reset=new Date(now);reset.setHours(24,0,0,0);const diff=reset-now;el.textContent=`Next: ${Math.floor(diff/3600000)}h`;setTimeout(updDailyTimer,60000)}
+function buildCal(){const g=document.getElementById('calendarGrid');const dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];const rw=[200,200,300,300,400,500,600];const td=new Date().getDay(),ts=new Date().toDateString();let h='';for(let i=0;i<7;i++){const cl=save.cal.cd.includes(i);h+=`<div class="cal-day ${cl?'claimed':''} ${(i===td&&save.cal.lc!==ts)?'today':''}">${dn[i]}<br><span style="font-weight:700;color:var(--gold)">${cl?'âœ…':rw[i]+'V'}</span></div>`}g.innerHTML=h}
+function updDailyTimer(){const ts=new Date().toDateString();const el=document.getElementById('dailyTimer');if(save.cal.lc===ts){el.textContent='âœ… Claimed!';return}const now=new Date();const reset=new Date(now);reset.setHours(24,0,0,0);const diff=reset-now;el.textContent=`Next: ${Math.floor(diff/3600000)}h`;setTimeout(updDailyTimer,60000)}
 function equipSkin(id){save.skin=id;saveAll();updUI();s.click()}
 function buySkin(id,pr){if(!spend(pr)){toast('Not enough VOLTS!');return}save.owned.push(id);save.skin=id;saveAll();updUI();updHUD();s.gold()}
 function buyPU(id,pr){if(!spend(pr)){toast('Not enough VOLTS!');return}save.pu[id]=(save.pu[id]||0)+1;saveAll();updUI();updHUD();s.gold()}
-function watchAd(){initAudio();showOV('ad');document.getElementById('adTimer').textContent='5s';document.getElementById('adCollectBtn').style.display='none';let r=5;function tick(){r--;if(r<=0){document.getElementById('adTimer').textContent='✅';document.getElementById('adCollectBtn').style.display='inline-block';return}document.getElementById('adTimer').textContent=r+'s';setTimeout(tick,1000)}setTimeout(tick,1000)}
+function watchAd(){initAudio();showOV('ad');document.getElementById('adTimer').textContent='5s';document.getElementById('adCollectBtn').style.display='none';let r=5;function tick(){r--;if(r<=0){document.getElementById('adTimer').textContent='âœ…';document.getElementById('adCollectBtn').style.display='inline-block';return}document.getElementById('adTimer').textContent=r+'s';setTimeout(tick,1000)}setTimeout(tick,1000)}
 function collectAdReward(){addV(300);toast('+300 VOLTS!');showMenu()}
 function showSettings(){initAudio();updateSettingsUI();showOV('settings')}
 function openShopFromPause(){shopFromPause=true;showOV('shop')}
@@ -669,8 +830,15 @@ window.cancelContinue=skipContinue;window.skipContinue=skipContinue;
 window.startDoubleCountdown=startDoubleCountdown;window.collectDoubleReward=collectDoubleReward;
 window.cancelDouble=cancelDouble;window.rateNow=rateNow;window.rateLater=rateLater;
 window.openShopFromPause=openShopFromPause;window.closeShop=closeShop;
+window.showCMPDialog=showCMPDialog;
+
+// Check CMP consent on startup
+checkCMPExpiry();
+checkCMPOnStartup();
 
 updCal();
 showMenu();
 })();
 </script>
+</body>
+</html>
